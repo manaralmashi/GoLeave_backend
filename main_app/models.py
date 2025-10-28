@@ -157,7 +157,7 @@ class LeaveHistory(models.Model):
     action_by_user = models.ForeignKey(User, on_delete=models.CASCADE)
     
     def __str__(self):
-        return f"LeaveHistory: {self.leave_request.leave_type.get_type_display()} - {self.action_type}, Employee: {self.leave_request.employee.user.first_name}"
+        return f"LeaveHistory: the user {self.leave_request.employee.user.username} update request {self.leave_request.id} - {self.leave_request.leave_type.get_type_display()} - {self.get_action_type_display()}, Employee: {self.leave_request.employee.user.first_name}"
 
 
 # -------------------------🔸 LeaveBalance model 🔸-------------------------

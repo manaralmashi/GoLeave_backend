@@ -5,8 +5,8 @@ from rest_framework import status
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 
-from .models import User, Employee, LeaveType, LeaveRequest
-from .serializers import UserSerializer, EmployeeSerializer, LeaveTypeSerializer, LeaveRequestSerializer
+from .models import User, Employee, LeaveType, LeaveRequest, LeaveHistory
+from .serializers import UserSerializer, EmployeeSerializer, LeaveTypeSerializer, LeaveRequestSerializer, LeaveHistorySerializer
 
 # Create your views here.
 
@@ -216,5 +216,37 @@ class LeaveRequestDeleteView(APIView):
             # return a response
             return Response({'message': f'Leave Request: {leave_request_id} has been deleted!'}, status=status.HTTP_204_NO_CONTENT)
         
+        except Exception as error:
+            return Response({'error': str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+class ApproveLeaveRequestView(APIView):
+    def post(self, request, leave_request_id):
+        try:
+            # TODO:
+            # 1. Get the LeaveRequest object with ID
+            leave_request = get_object_or_404(LeaveRequest, id=leave_request_id)
+            
+            # 2. Update status to 'approved'
+            leave_request.status = 'approved'
+            
+            # 3. Save it to the DB
+            leave_request.save()
+            
+            # 4. Add new row on Leave History table
+            LeaveHistory.objects.create(
+                leave_request= leave_request,
+                action_type= 'approved',
+                action_by_user= request.user,
+                note= request.data.get('note', '')
+            )
+        
+            # 5. Return a response
+            return Response({
+                'message': 'Leave request approved successfully',
+                'leave_request_id': leave_request.id,
+                'new_status': 'approved',
+            }, status=status.HTTP_200_OK)
+            
         except Exception as error:
             return Response({'error': str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
