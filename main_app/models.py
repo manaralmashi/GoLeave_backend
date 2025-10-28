@@ -60,7 +60,7 @@ class LeaveType(models.Model):
     
     type = models.CharField(max_length=20, choices=LEAVE_TYPES, unique=True, default='SPECIAL')
     description = models.TextField(blank=True)
-    max_days_allowed = models.PositiveIntegerField()
+    max_days_allowed = models.PositiveIntegerField(blank=True)
     
     def save(self, *args, **kwargs):
         # set `description` and `max_days_allowed` for the Leave Type

@@ -5,8 +5,8 @@ from rest_framework import status
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 
-from .models import User, Employee
-from .serializers import UserSerializer, EmployeeSerializer
+from .models import User, Employee, LeaveType
+from .serializers import UserSerializer, EmployeeSerializer, LeaveTypeSerializer
 
 # Create your views here.
 
@@ -113,5 +113,34 @@ class EmployeeDeleteView(APIView):
             # return a response
             return Response({'message': f'Employee {employee_id} has been deleted!'}, status=status.HTTP_204_NO_CONTENT)
 
+        except Exception as error:
+            return Response({'error': str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class LeaveTypeListView(APIView):
+    def get(self, request):
+        # Get all of all leave types from the DB
+        queryset = LeaveType.objects.all()
+        
+        # convert to a JSON using a serializer
+        serializer = LeaveTypeSerializer(queryset, many=True)
+
+        return Response(serializer.data)
+    
+
+class LeaveTypeUpdateView(APIView):
+    def put(self, request, leave_type_id):
+        try:
+            # Get the single leave type from the DB
+            # Look up an leave type in the DB and if it does not exist return a 404 
+            queryset = get_object_or_404(LeaveType, id=leave_type_id)
+            # Overwrite it with the new data
+            serializer = LeaveTypeSerializer(queryset, data=request.data)
+            # save it!
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
         except Exception as error:
             return Response({'error': str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
