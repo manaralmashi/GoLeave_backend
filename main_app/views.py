@@ -284,3 +284,33 @@ class RejectLeaveRequestView(APIView):
             return Response({'error': str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+class PendingLeaveRequestView(APIView):
+    def post(self, request, leave_request_id):
+        try:
+            # TODO:
+            # 1. Get the LeaveRequest object with ID
+            leave_request = get_object_or_404(LeaveRequest, id=leave_request_id)
+            
+            # 2. Update status to 'pending'
+            leave_request.status = 'pending'
+            
+            # 3. Save it to the DB
+            leave_request.save()
+            
+            # 4. Add new row on Leave History table
+            LeaveHistory.objects.create(
+                leave_request= leave_request,
+                action_type= 'pending',
+                action_by_user= request.user,
+                note= request.data.get('note', '')
+            )
+        
+            # 5. Return a response
+            return Response({
+                'message': 'Leave request pending successfully',
+                'leave_request_id': leave_request.id,
+                'new_status': 'pending',
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as error:
+            return Response({'error': str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
