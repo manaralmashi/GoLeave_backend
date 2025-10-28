@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
 
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
@@ -221,7 +222,7 @@ class LeaveRequestDeleteView(APIView):
 
 
 class ApproveLeaveRequestView(APIView):
-    def post(self, request, leave_request_id):
+    def patch(self, request, leave_request_id):
         try:
             # TODO:
             # 1. Get the LeaveRequest object with ID
@@ -253,7 +254,7 @@ class ApproveLeaveRequestView(APIView):
 
 
 class RejectLeaveRequestView(APIView):
-    def post(self, request, leave_request_id):
+    def patch(self, request, leave_request_id):
         try:
             # TODO:
             # 1. Get the LeaveRequest object with ID
@@ -285,7 +286,7 @@ class RejectLeaveRequestView(APIView):
 
 
 class PendingLeaveRequestView(APIView):
-    def post(self, request, leave_request_id):
+    def patch(self, request, leave_request_id):
         try:
             # TODO:
             # 1. Get the LeaveRequest object with ID
