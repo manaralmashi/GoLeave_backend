@@ -6,62 +6,120 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
-# -------------------------🔸 Profile model 🔸-------------------------
-class Profile(models.Model):
+# -------------------------🔸 Employee model 🔸-------------------------
+class Employee(models.Model):
+    
+    DEPARTMENT_CHOICES = (
+        ('HR', 'Human Resources'),
+        ('MKT', 'Marketing'),
+        ('R&D', 'Research & Development'),
+        ('SALES', 'Sales'),
+        ('FIN', 'Finance'),
+        ('IT', 'Information Technology'),
+        ('ADMIN', 'Administration'),
+        ('CS', 'Customer Service'),
+        ('ACC', 'Accounting'),
+        ('QA', 'Quality Assurance'),
+        ('MNT', 'Maintenance'),
+        ('BIZ', 'Business'),
+        ('DES', 'Designing'),
+        ('LEAD', 'Leadership'),
+        ('LEGAL', 'Legal'),
+        ('OTHER', 'Other')
+    )
     
     ROLE_TYPES = (
         ('admin', 'Admin'),
         ('employee', 'Employee'),
     )
-    
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
+
+    job_title = models.CharField(max_length=100)
+    department = models.CharField(max_length=20, choices=DEPARTMENT_CHOICES, default='OTHER', null=False, blank=False)
     role = models.CharField(max_length=20, choices=ROLE_TYPES, default=ROLE_TYPES[0][0])
-    
+    hire_date = models.DateField('Hire date')
+
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     
     def __str__(self):
-        return f"Profile: {self.first_name} {self.last_name} - Role: {self.role}"
-
-
-# -------------------------🔸 Department model 🔸-------------------------
-class Department(models.Model):
-    name = models.CharField(max_length=100)
-    manager_name = models.CharField(max_length=100)
-    
-    def __str__(self):
-        return self.name
-
-
-# -------------------------🔸 Employee model 🔸-------------------------
-class Employee(models.Model):
-    job_title = models.CharField(max_length=100)
-    hire_date = models.DateField('Hire date')
-
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    department = models.ForeignKey(Department, on_delete=models.CASCADE)
-    
-    def __str__(self):
-        return f"Employee name: {self.user.username} - {self.job_title}"
+        return f"Employee name: {self.user.first_name} {self.user.last_name} - {self.job_title} ({self.get_role_display()})"
 
 
 # -------------------------🔸 LeaveType model 🔸-------------------------
 class LeaveType(models.Model):
+
+    LEAVE_TYPES = (
+        (' ', ' '),
+        (' ', ' '),
+
+    )
+
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     max_days_allowed = models.PositiveIntegerField()
     
     def __str__(self):
         return self.name
-
+class LeaveType(models.Model):
+    
+    LEAVE_TYPES = (
+        ('ANNUAL', 'Annual Leave'),
+        # ('STUDY', 'Study Leave'),
+        ('EMERGENCY', 'Emergency Leave'),
+        ('SICK', 'Sick Leave'),
+        ('PATIENT_CARE', 'Patient Care Leave'),
+        ('SPECIAL', 'Special Leave'),
+        ('BEREAVEMENT', 'Bereavement Leave'),
+        # ('NATIONAL', 'National Participation Leave'),
+    )
+    
+    type = models.CharField(max_length=20, choices=LEAVE_TYPES, unique=True, default='SPECIAL')
+    description = models.TextField(blank=True)
+    max_days_allowed = models.PositiveIntegerField()
+    
+    def save(self, *args, **kwargs):
+        # set `description` and `max_days_allowed` for the Leave Type
+        if not self.description: self.description = self.get_description()
+        if not self.max_days_allowed: self.max_days_allowed = self.get_max_days_allowed()
+        # save it to the db
+        super().save(*args, **kwargs)
+    
+    # 
+    def get_description(self):
+        descriptions = {
+            'ANNUAL': 'Regular annual vacation for employees',
+            # 'STUDY': 'Leave for educational exams and study purposes',
+            'EMERGENCY': 'Urgent leave for unforeseen circumstances',
+            'SICK': 'Medical leave for health-related issues',
+            'PATIENT_CARE': 'Leave to accompany and care for sick family members',
+            'SPECIAL': 'Exceptional leave for special circumstances',
+            'BEREAVEMENT': 'Leave in case of family member death',
+            # 'NATIONAL': 'Leave for national events and participation',
+        }
+        return descriptions.get(self.name, '')
+    
+    def get_max_days_allowed(self):
+        max_days = {
+            'ANNUAL': 30,
+            # 'STUDY': , # --------> Depends on number of study days
+            'EMERGENCY': 3,
+            'SICK': 30,
+            'PATIENT_CARE': 5,
+            'SPECIAL': 10000, # -------> # of days is not specified (indefinitely), it Just required the `Approved`!
+            'BEREAVEMENT': 5,
+            # 'NATIONAL': , # --------> Depends on number of national events days
+        }
+        return max_days.get(self.type, 0)
+    
+    def __str__(self):
+        return self.get_type_display()
 
 # -------------------------🔸 LeaveRequest model 🔸-------------------------
 class LeaveRequest(models.Model):
-    STATUS_CHOICES = [
+    STATUS_CHOICES = (
         ('pending', 'Pending'),
         ('approved', 'Approved'),
         ('rejected', 'Rejected'),
-    ]
+    )
     
     start_date = models.DateField()
     end_date = models.DateField()
@@ -75,13 +133,13 @@ class LeaveRequest(models.Model):
     leave_type = models.ForeignKey(LeaveType, on_delete=models.CASCADE)
     
     def __str__(self):
-        return f"{self.employee.user.username} - {self.leave_type.name}"
+        return f"{self.employee.user.first_name} - {self.leave_type.get_type_display()}"
 
 
 # -------------------------🔸 LeaveHistory model 🔸-------------------------
 class LeaveHistory(models.Model):
     ACTION_CHOICES = [
-        ('submitted', 'Submitted'),
+        ('pending', 'Pending'),
         ('approved', 'Approved'),
         ('rejected', 'Rejected'),
     ]
@@ -94,12 +152,12 @@ class LeaveHistory(models.Model):
     action_by_user = models.ForeignKey(User, on_delete=models.CASCADE)
     
     def __str__(self):
-        return f"{self.leave_request} - {self.action_type}"
+        return f"LeaveHistory: {self.leave_request.leave_type.get_type_display()} - {self.action_type}, Employee: {self.leave_request.employee.user.first_name}"
 
 
 # -------------------------🔸 LeaveBalance model 🔸-------------------------
 class LeaveBalance(models.Model):
-    total_days = models.PositiveIntegerField()
+    total_days = models.PositiveIntegerField(default=30)
     used_days = models.PositiveIntegerField(default=0)
     remaining_days = models.PositiveIntegerField()
     last_updated = models.DateTimeField(auto_now=True)
@@ -108,7 +166,7 @@ class LeaveBalance(models.Model):
     leave_type = models.ForeignKey(LeaveType, on_delete=models.CASCADE)
     
     def __str__(self):
-        return f"{self.employee} - {self.leave_type}: {self.remaining_days}"
+        return f"{self.employee.user.first_name} - {self.leave_type.get_type_display()}: {self.remaining_days}"
     
     class Meta:
         unique_together = ['employee', 'leave_type']
