@@ -35,7 +35,7 @@ class Employee(models.Model):
 
     job_title = models.CharField(max_length=100)
     department = models.CharField(max_length=20, choices=DEPARTMENT_CHOICES, default='OTHER', null=False, blank=False)
-    role = models.CharField(max_length=20, choices=ROLE_TYPES, default=ROLE_TYPES[0][0])
+    role = models.CharField(max_length=20, choices=ROLE_TYPES, default='employee')
     hire_date = models.DateField('Hire date')
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -45,20 +45,6 @@ class Employee(models.Model):
 
 
 # -------------------------🔸 LeaveType model 🔸-------------------------
-class LeaveType(models.Model):
-
-    LEAVE_TYPES = (
-        (' ', ' '),
-        (' ', ' '),
-
-    )
-
-    name = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
-    max_days_allowed = models.PositiveIntegerField()
-    
-    def __str__(self):
-        return self.name
 class LeaveType(models.Model):
     
     LEAVE_TYPES = (
@@ -95,7 +81,7 @@ class LeaveType(models.Model):
             'BEREAVEMENT': 'Leave in case of family member death',
             # 'NATIONAL': 'Leave for national events and participation',
         }
-        return descriptions.get(self.name, '')
+        return descriptions.get(self.type, '')
     
     def get_max_days_allowed(self):
         max_days = {
