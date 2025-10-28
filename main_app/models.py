@@ -1,5 +1,8 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+
+from django.forms import ValidationError
+
 # Create your models here.
 
 # -------------------------🔸 User model 🔸-------------------------
@@ -109,17 +112,33 @@ class LeaveRequest(models.Model):
     
     start_date = models.DateField()
     end_date = models.DateField()
+    total_days = models.PositiveIntegerField(blank=True, null=True) # --> Computed field
     reason = models.TextField()
     # attachment = models.FileField(blank=True, null=True) --> optional (i will do it later)
     is_outside_country = models.BooleanField(default=False)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, null=True, blank=True, default=None)
     created_at = models.DateTimeField(auto_now_add=True)
     
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     leave_type = models.ForeignKey(LeaveType, on_delete=models.CASCADE)
     
+    # use clean() method to validate fields (Learn concept from `https://stackoverflow.com/questions/12278753/clean-method-in-model-and-field-validation`)
+    def clean(self):
+        if self.start_date and self.end_date:
+            if self.end_date < self.start_date:
+                raise ValidationError({ 'end_date': 'End date must be after start date!' })
+            
+    # save Computed Field `total_days` automatically
+    def save(self, *args, **kwargs):
+        if self.start_date and self.end_date:
+            self.total_days = (self.end_date - self.start_date).days + 1
+        else:
+            self.total_days = 0
+        
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return f"{self.employee.user.first_name} - {self.leave_type.get_type_display()}"
+        return f"LeaveRequest: {self.employee.user.first_name} - {self.leave_type.get_type_display()} - start:{self.start_date} end:{self.end_date} ({self.total_days} days)"
 
 
 # -------------------------🔸 LeaveHistory model 🔸-------------------------
