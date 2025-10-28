@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Employee, LeaveType
+from .models import User, Employee, LeaveType, LeaveRequest
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -30,3 +30,9 @@ class LeaveTypeSerializer(serializers.ModelSerializer):
 
         leave_type_object.save()
         return leave_type_object
+
+
+class LeaveRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LeaveRequest
+        fields = '__all__'

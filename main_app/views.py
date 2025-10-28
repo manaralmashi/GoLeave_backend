@@ -5,8 +5,8 @@ from rest_framework import status
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 
-from .models import User, Employee, LeaveType
-from .serializers import UserSerializer, EmployeeSerializer, LeaveTypeSerializer
+from .models import User, Employee, LeaveType, LeaveRequest
+from .serializers import UserSerializer, EmployeeSerializer, LeaveTypeSerializer, LeaveRequestSerializer
 
 # Create your views here.
 
@@ -126,7 +126,7 @@ class LeaveTypeListView(APIView):
         serializer = LeaveTypeSerializer(queryset, many=True)
 
         return Response(serializer.data)
-    
+
 
 class LeaveTypeUpdateView(APIView):
     def put(self, request, leave_type_id):
@@ -141,6 +141,80 @@ class LeaveTypeUpdateView(APIView):
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        except Exception as error:
+            return Response({'error': str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class LeaveRequestListView(APIView):
+    def get(self, request):
+        # Get all of all leave requests from the DB
+        queryset = LeaveRequest.objects.all()
+        
+        # convert to a JSON using a serializer
+        serializer = LeaveRequestSerializer(queryset, many=True)
+
+        return Response(serializer.data)
+
+
+class LeaveRequestCreateView(APIView):
+    def post(self, request):
+        try:
+            serializer = LeaveRequestSerializer(data=request.data)
+
+            if serializer.is_valid(): # if all fields is valid,
+                serializer.save() # save it to thr DB
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            # if any field is Invalid, return this
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        except Exception as error:
+            return Response({'error': str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class LeaveRequestDetailView(APIView):
+    def get(self, request, leave_request_id):
+        try:
+            # Get single Leave Request from the DB using her id
+            queryset = get_object_or_404(LeaveRequest, id=leave_request_id)
+
+            # convert to a JSON using a serializer
+            serializer = LeaveRequestSerializer(queryset)
+
+            # return a Response
+            return Response(serializer.data)
+        
+        except Exception as error:
+            return Response({'error': str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class LeaveRequestUpdateView(APIView):
+    def put(self, request, leave_request_id):
+        try:
+            # Get the single leave request from the DB
+            # Look up an leave request in the DB and if it does not exist return a 404 
+            queryset = get_object_or_404(LeaveRequest, id=leave_request_id)
+            # Overwrite it with the new data
+            serializer = LeaveRequestSerializer(queryset, data=request.data)
+            # save it!
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        except Exception as error:
+            return Response({'error': str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class LeaveRequestDeleteView(APIView):
+    def delete(self, request, leave_request_id):
+        try:
+            # Get an leave request or return a 404
+            queryset = get_object_or_404(LeaveRequest, id=leave_request_id)
+            # delete the leave request
+            queryset.delete()
+            # return a response
+            return Response({'message': f'Leave Request: {leave_request_id} has been deleted!'}, status=status.HTTP_204_NO_CONTENT)
         
         except Exception as error:
             return Response({'error': str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
