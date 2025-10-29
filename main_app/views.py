@@ -12,12 +12,16 @@ from .serializers import UserSerializer, EmployeeSerializer, LeaveTypeSerializer
 # Create your views here.
 
 class Home(APIView):
+    permission_classes = [AllowAny]
+
     def get(self, request):
         content = {'message': 'Welcome to the GoLeave API !'}
         return Response(content)
 
 
 class UserListView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
         # Get all of users from the DB
         queryset = User.objects.all()
@@ -29,6 +33,8 @@ class UserListView(APIView):
 
 
 class UserDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, user_id):
         try:
             # Get single user from the DB using her id
@@ -45,6 +51,8 @@ class UserDetailView(APIView):
         
 
 class EmployeeListView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
         # Get all of all employees from the DB
         queryset = Employee.objects.all()
@@ -56,6 +64,8 @@ class EmployeeListView(APIView):
 
 
 class EmployeeCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
         try:
             serializer = EmployeeSerializer(data=request.data)
@@ -71,6 +81,8 @@ class EmployeeCreateView(APIView):
 
 
 class EmployeeDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, employee_id):
         try:
             # Get single Employee from the DB using her id
@@ -87,6 +99,8 @@ class EmployeeDetailView(APIView):
 
 
 class EmployeeUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def put(self, request, employee_id):
         try:
             # Get the single employee from the DB
@@ -105,6 +119,8 @@ class EmployeeUpdateView(APIView):
 
 
 class EmployeeDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def delete(self, request, employee_id):
         try:
             # Get an employee or return a 404
@@ -119,6 +135,8 @@ class EmployeeDeleteView(APIView):
 
 
 class LeaveTypeListView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
         # Get all of all leave types from the DB
         queryset = LeaveType.objects.all()
@@ -130,6 +148,8 @@ class LeaveTypeListView(APIView):
 
 
 class LeaveTypeUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def put(self, request, leave_type_id):
         try:
             # Get the single leave type from the DB
@@ -148,6 +168,8 @@ class LeaveTypeUpdateView(APIView):
 
 
 class LeaveRequestListView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
         # Get all of all leave requests from the DB
         queryset = LeaveRequest.objects.all()
@@ -159,6 +181,8 @@ class LeaveRequestListView(APIView):
 
 
 class LeaveRequestCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
         try:
             serializer = LeaveRequestSerializer(data=request.data)
@@ -174,6 +198,8 @@ class LeaveRequestCreateView(APIView):
 
 
 class LeaveRequestDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, leave_request_id):
         try:
             # Get single Leave Request from the DB using her id
@@ -190,6 +216,8 @@ class LeaveRequestDetailView(APIView):
 
 
 class LeaveRequestUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def put(self, request, leave_request_id):
         try:
             # Get the single leave request from the DB
@@ -208,6 +236,8 @@ class LeaveRequestUpdateView(APIView):
 
 
 class LeaveRequestDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def delete(self, request, leave_request_id):
         try:
             # Get an leave request or return a 404
@@ -222,6 +252,8 @@ class LeaveRequestDeleteView(APIView):
 
 
 class ApproveLeaveRequestView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def patch(self, request, leave_request_id):
         try:
             # TODO:
@@ -254,6 +286,8 @@ class ApproveLeaveRequestView(APIView):
 
 
 class RejectLeaveRequestView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def patch(self, request, leave_request_id):
         try:
             # TODO:
@@ -286,6 +320,8 @@ class RejectLeaveRequestView(APIView):
 
 
 class PendingLeaveRequestView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def patch(self, request, leave_request_id):
         try:
             # TODO:
