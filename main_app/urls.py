@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import Home, UserListView, UserDetailView, EmployeeListView, EmployeeCreateView, EmployeeDetailView, EmployeeUpdateView, EmployeeDeleteView, LeaveTypeListView, LeaveTypeUpdateView, LeaveRequestListView, LeaveRequestCreateView, LeaveRequestDetailView, LeaveRequestUpdateView, LeaveRequestDeleteView, ApproveLeaveRequestView, RejectLeaveRequestView, PendingLeaveRequestView, SignupUserView
+from .views import Home, UserListView, UserDetailView, EmployeeListView, EmployeeCreateView, EmployeeDetailView, EmployeeUpdateView, EmployeeDeleteView, LeaveTypeListView, LeaveTypeUpdateView, LeaveRequestListView, LeaveRequestCreateView, LeaveRequestDetailView, LeaveRequestUpdateView, LeaveRequestDeleteView, ApproveLeaveRequestView, RejectLeaveRequestView, PendingLeaveRequestView, LeaveBalanceListView, LeaveBalanceByEmployeeView, SignupUserView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
@@ -21,6 +21,8 @@ urlpatterns = [
     path('leave-requests/<int:leave_request_id>/approve/', ApproveLeaveRequestView.as_view(), name='approve-leave'),
     path('leave-requests/<int:leave_request_id>/reject/', RejectLeaveRequestView.as_view(), name='reject-leave'),
     path('leave-requests/<int:leave_request_id>/pending/', PendingLeaveRequestView.as_view(), name='pending-leave'),
+    path('leave-balances/', LeaveBalanceListView.as_view(), name='list-all-leave-balances'),
+    path('leave-balances/<int:employee_id>/', LeaveBalanceByEmployeeView.as_view(), name='list-employee-leave-balances'),
 
     path('signup/', SignupUserView.as_view(), name='signup'),
     path('login/', TokenObtainPairView.as_view(), name='login'), # token obtain pair

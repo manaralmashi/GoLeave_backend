@@ -6,8 +6,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticate
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 
-from .models import User, Employee, LeaveType, LeaveRequest, LeaveHistory
-from .serializers import UserSerializer, EmployeeSerializer, LeaveTypeSerializer, LeaveRequestSerializer
+from .models import User, Employee, LeaveType, LeaveRequest, LeaveHistory, LeaveBalance
+from .serializers import UserSerializer, EmployeeSerializer, LeaveTypeSerializer, LeaveRequestSerializer, LeaveBalanceSerializer
 
 # Create your views here.
 
@@ -352,6 +352,36 @@ class PendingLeaveRequestView(APIView):
         except Exception as error:
             return Response({'error': str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
+
+class LeaveBalanceListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # TODO:
+        # 1. Get all of all leave balances from the DB
+        queryset = LeaveBalance.objects.all()
+        
+        # 2. convert to a JSON using a serializer
+        serializer = LeaveBalanceSerializer(queryset, many=True)
+
+        # 3. return a response
+        return Response(serializer.data)
+
+
+class LeaveBalanceByEmployeeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, employee_id):
+        # TODO:
+        # 1. Get all of all leave balances from the DB that related to employee_id
+        queryset = LeaveBalance.objects.filter(employee= employee_id)
+
+        # 2. convert to a JSON using a serializer
+        serializer = LeaveBalanceSerializer(queryset, many=True)
+
+        # 3. return a response
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class SignupUserView(APIView):
     permission_classes = [AllowAny]
