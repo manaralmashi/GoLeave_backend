@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import Home, UserListView, UserDetailView, EmployeeListView, EmployeeCreateView, EmployeeDetailView, EmployeeUpdateView, EmployeeDeleteView, LeaveTypeListView, LeaveTypeUpdateView, LeaveRequestListView, LeaveRequestCreateView, LeaveRequestDetailView, LeaveRequestUpdateView, LeaveRequestDeleteView, ApproveLeaveRequestView, RejectLeaveRequestView, PendingLeaveRequestView
+from .views import Home, UserListView, UserDetailView, EmployeeListView, EmployeeCreateView, EmployeeDetailView, EmployeeUpdateView, EmployeeDeleteView, LeaveTypeListView, LeaveTypeUpdateView, LeaveRequestListView, LeaveRequestCreateView, LeaveRequestDetailView, LeaveRequestUpdateView, LeaveRequestDeleteView, ApproveLeaveRequestView, RejectLeaveRequestView, PendingLeaveRequestView, SignupUserView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
@@ -22,6 +22,7 @@ urlpatterns = [
     path('leave-requests/<int:leave_request_id>/reject/', RejectLeaveRequestView.as_view(), name='reject-leave'),
     path('leave-requests/<int:leave_request_id>/pending/', PendingLeaveRequestView.as_view(), name='pending-leave'),
 
+    path('signup/', SignupUserView.as_view(), name='signup'),
     path('login/', TokenObtainPairView.as_view(), name='login'), # token obtain pair
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'), # get new access token
 ]
