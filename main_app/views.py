@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
+from .permissions import IsAdminUser, IsEmployeeUser
 
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
@@ -20,7 +21,7 @@ class Home(APIView):
 
 
 class UserListView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]
 
     def get(self, request):
         # Get all of users from the DB
@@ -51,7 +52,7 @@ class UserDetailView(APIView):
         
 
 class EmployeeListView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]
 
     def get(self, request):
         # Get all of all employees from the DB
@@ -64,7 +65,7 @@ class EmployeeListView(APIView):
 
 
 class EmployeeCreateView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]
 
     def post(self, request):
         try:
@@ -119,7 +120,7 @@ class EmployeeUpdateView(APIView):
 
 
 class EmployeeDeleteView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]
 
     def delete(self, request, employee_id):
         try:
@@ -181,7 +182,7 @@ class LeaveRequestListView(APIView):
 
 
 class LeaveRequestCreateView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsEmployeeUser]
 
     def post(self, request):
         try:
@@ -252,7 +253,7 @@ class LeaveRequestDeleteView(APIView):
 
 
 class ApproveLeaveRequestView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]
 
     def patch(self, request, leave_request_id):
         try:
@@ -286,7 +287,7 @@ class ApproveLeaveRequestView(APIView):
 
 
 class RejectLeaveRequestView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]
 
     def patch(self, request, leave_request_id):
         try:
@@ -320,7 +321,7 @@ class RejectLeaveRequestView(APIView):
 
 
 class PendingLeaveRequestView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]
 
     def patch(self, request, leave_request_id):
         try:
