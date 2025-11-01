@@ -2,6 +2,8 @@
 
 from django.db import migrations
 
+# Learned from the Source: `https://dev.to/mungaigikure/set-up-and-load-initial-data-in-django-2gg8` - Using Migrations NOT Using Fixtures! 
+
 def create_leave_types(apps, schema_editor):
     # Get `LeaveType` model
     LeaveType = apps.get_model('main_app', 'LeaveType')

@@ -68,45 +68,9 @@ class LeaveType(models.Model):
         # ('NATIONAL', 'National Participation Leave'),
     )
     
-    type = models.CharField(max_length=20, choices=LEAVE_TYPES, unique=True, blank=False, null=False, default=None)
+    type = models.CharField(max_length=20, choices=LEAVE_TYPES, unique=True, blank=False, null=False)
     description = models.TextField(blank=True)
     max_days_allowed = models.PositiveIntegerField(blank=True)
-    
-    def save(self, *args, **kwargs):
-        # set `description` and `max_days_allowed` for the Leave Type
-        if not self.description: 
-            self.description = self.get_description()
-        if not self.max_days_allowed: 
-            self.max_days_allowed = self.get_max_days_allowed()
-        # save it to the db
-        super().save(*args, **kwargs)
-    
-    # 
-    def get_description(self):
-        descriptions = {
-            'ANNUAL': 'Regular annual vacation for employees',
-            # 'STUDY': 'Leave for educational exams and study purposes',
-            'EMERGENCY': 'Urgent leave for unforeseen circumstances',
-            'SICK': 'Medical leave for health-related issues',
-            'PATIENT_CARE': 'Leave to accompany and care for sick family members',
-            'SPECIAL': 'Exceptional leave for special circumstances',
-            'BEREAVEMENT': 'Leave in case of family member death',
-            # 'NATIONAL': 'Leave for national events and participation',
-        }
-        return descriptions.get(self.type, '')
-    
-    def get_max_days_allowed(self):
-        max_days = {
-            'ANNUAL': 30,
-            # 'STUDY': , # --------> Depends on number of study days
-            'EMERGENCY': 3,
-            'SICK': 30,
-            'PATIENT_CARE': 5,
-            'SPECIAL': 10000, # -------> # of days is not specified (indefinitely), it Just required the `Approved`!
-            'BEREAVEMENT': 5,
-            # 'NATIONAL': , # --------> Depends on number of national events days
-        }
-        return max_days.get(self.type, 0)
     
     def __str__(self):
         return self.get_type_display()
@@ -248,7 +212,7 @@ class LeaveRequest(models.Model):
             
             # Only deduct if we haven't already done so
             if not hasattr(self, '_balance_updated'):
-                success = balance.deduct_days(self.total_days)
+                success = balance.reduce_days(self.total_days)
                 if success:
                     self._balance_updated = True
                     # Clear warning if balance was successfully updated
