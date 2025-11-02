@@ -388,26 +388,65 @@ class SignupUserView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        # User model data
         username = request.data.get("username")
         email = request.data.get("email")
         password = request.data.get("password")
         first_name = request.data.get("first_name")
         last_name = request.data.get("last_name")
+        # Employee model data
+        job_title = request.data.get("job_title")
+        department = request.data.get("department")
+        role = request.data.get("role")
+        hire_date = request.data.get("hire_date")
 
-        if not username or not password or not email or not first_name or not last_name:
+        required_fields = [username, password, email, first_name, last_name, job_title, department, role, hire_date]
+        if not all(required_fields):
             return Response(
-                {"error": "Please provide username, password, email, first name, and last name!"},
+                {"error": "Please provide all required fields!"},
                 status=status.HTTP_400_BAD_REQUEST)
-        
+
+        # if User Already Exists
         if User.objects.filter(username=username).exists():
             return Response(
-                {'error': "User Already Exisits"},
+                {'error': "User Already Exists"},
                 status=status.HTTP_400_BAD_REQUEST)
 
-        user = User.objects.create_user(
-            username=username, email=email, password=password, first_name=first_name, last_name=last_name
-        )
-        
-        return Response(
-            {"id": user.id, "username": user.username, "email": user.email, "first_name": user.first_name, "last_name": user.last_name},
-            status=status.HTTP_201_CREATED)
+        try:
+            # 1. Create new `User`
+            user = User.objects.create_user(
+                username=username, 
+                email=email, 
+                password=password, 
+                first_name=first_name, 
+                last_name=last_name
+            )
+            
+            # 2. Create new `Employee` that related to `User`
+            employee = Employee.objects.create(
+                user=user,
+                job_title=job_title,
+                department=department,
+                role=role,
+                hire_date=hire_date
+            )
+            
+            return Response({
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "employee_id": employee.id,
+                "job_title": employee.job_title,
+                "department": employee.department
+            }, status=status.HTTP_201_CREATED)
+            
+        except Exception as err:
+            # if Employee faild delete the User, local(): Variables inside the current function/block, Source: `https://www.geeksforgeeks.org/python/python-locals-function/`
+            if 'user' in locals():
+                user.delete()
+
+            return Response(
+                {"error": str(err)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
