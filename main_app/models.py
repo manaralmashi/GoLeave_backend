@@ -248,6 +248,9 @@ class LeaveRequest(models.Model):
     def __str__(self):
         return f"LeaveRequest: {self.employee.user.first_name} - {self.leave_type.get_type_display()} - start:{self.start_date} end:{self.end_date} ({self.total_days} days)"
 
+    class Meta:
+        # order leave requests by newest created date
+        ordering = ['-created_at']
 
 # -------------------------🔸 LeaveHistory model 🔸-------------------------
 class LeaveHistory(models.Model):

@@ -81,17 +81,30 @@ WSGI_APPLICATION = 'GoLeave_backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# 1. Use Neon Server
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'GoLeave',
+#         'USER': 'neondb_owner',
+#         'PASSWORD': 'npg_Ac0bfC4oduZM',
+#         'HOST': 'ep-red-field-a14it2ve-pooler.ap-southeast-1.aws.neon.tech',
+#         'PORT': '5432',
+#         'OPTIONS': {
+#             'sslmode': 'require',
+#         }
+#     }
+# }
+
+# 2. Use my Local Server (without Neon)
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'GoLeave',
-        'USER': 'neondb_owner',
-        'PASSWORD': 'npg_Ac0bfC4oduZM',
-        'HOST': 'ep-red-field-a14it2ve-pooler.ap-southeast-1.aws.neon.tech',
+        'USER': 'manaralmashi',
+        'PASSWORD': '',
+        'HOST': 'localhost',
         'PORT': '5432',
-        'OPTIONS': {
-            'sslmode': 'require',
-        }
     }
 }
 
