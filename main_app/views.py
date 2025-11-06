@@ -1,8 +1,12 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import AllowAny, AllowAny, AllowAnyOrReadOnly
 from .permissions import IsAdminUser, IsEmployeeUser
+
+from django.db.models import Count, Q
+from django.utils import timezone
+from datetime import timedelta
 
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
@@ -21,7 +25,7 @@ class Home(APIView):
 
 
 class UserListView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [AllowAny]
 
     def get(self, request):
         # Get all of users from the DB
@@ -34,7 +38,7 @@ class UserListView(APIView):
 
 
 class UserDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get(self, request, user_id):
         try:
@@ -51,8 +55,8 @@ class UserDetailView(APIView):
             return Response({'error': str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 
-class EmployeeListView(APIView):
-    permission_classes = [IsAdminUser]
+class EmployeeListCreateView(APIView):
+    permission_classes = [AllowAny]
 
     def get(self, request):
         # Get all of all employees from the DB
@@ -62,10 +66,7 @@ class EmployeeListView(APIView):
         serializer = EmployeeSerializer(queryset, many=True)
 
         return Response(serializer.data)
-
-
-class EmployeeCreateView(APIView):
-    permission_classes = [IsAdminUser]
+    
 
     def post(self, request):
         try:
@@ -81,8 +82,38 @@ class EmployeeCreateView(APIView):
             return Response({'error': str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+# class EmployeeListView(APIView):
+#     permission_classes = [AllowAny]
+
+#     def get(self, request):
+#         # Get all of all employees from the DB
+#         queryset = Employee.objects.all()
+        
+#         # convert to a JSON using a serializer
+#         serializer = EmployeeSerializer(queryset, many=True)
+
+#         return Response(serializer.data)
+
+
+# class EmployeeCreateView(APIView):
+#     permission_classes = [AllowAny]
+
+#     def post(self, request):
+#         try:
+#             serializer = EmployeeSerializer(data=request.data)
+
+#             if serializer.is_valid(): # if all fields is valid,
+#                 serializer.save() # save it to thr DB
+#                 return Response(serializer.data, status=status.HTTP_201_CREATED)
+#             # if any field is Invalid, return this
+#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+#         except Exception as error:
+#             return Response({'error': str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 class EmployeeDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get(self, request, employee_id):
         try:
@@ -100,7 +131,7 @@ class EmployeeDetailView(APIView):
 
 
 class EmployeeUpdateView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def put(self, request, employee_id):
         try:
@@ -120,7 +151,7 @@ class EmployeeUpdateView(APIView):
 
 
 class EmployeeDeleteView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [AllowAny]
 
     def delete(self, request, employee_id):
         try:
@@ -136,7 +167,7 @@ class EmployeeDeleteView(APIView):
 
 
 class LeaveTypeListView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get(self, request):
         # Get all of all leave types from the DB
@@ -149,7 +180,7 @@ class LeaveTypeListView(APIView):
 
 
 class LeaveTypeUpdateView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]
 
     def put(self, request, leave_type_id):
         try:
@@ -168,9 +199,10 @@ class LeaveTypeUpdateView(APIView):
             return Response({'error': str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class LeaveRequestListView(APIView):
-    permission_classes = [IsAuthenticated]
+class LeaveRequestListCreateView(APIView):
+    permission_classes = [AllowAny]
 
+    # List Leave Requests
     def get(self, request):
         # Get all of all leave requests from the DB
         queryset = LeaveRequest.objects.all()
@@ -179,11 +211,8 @@ class LeaveRequestListView(APIView):
         serializer = LeaveRequestSerializer(queryset, many=True)
 
         return Response(serializer.data)
-
-
-class LeaveRequestCreateView(APIView):
-    permission_classes = [IsEmployeeUser]
-
+    
+    # Create Leave Requests
     def post(self, request):
         try:
             serializer = LeaveRequestSerializer(data=request.data)
@@ -197,9 +226,38 @@ class LeaveRequestCreateView(APIView):
         except Exception as error:
             return Response({'error': str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+# class LeaveRequestListView(APIView):
+#     permission_classes = [AllowAny]
+
+#     def get(self, request):
+#         # Get all of all leave requests from the DB
+#         queryset = LeaveRequest.objects.all()
+        
+#         # convert to a JSON using a serializer
+#         serializer = LeaveRequestSerializer(queryset, many=True)
+
+#         return Response(serializer.data)
+
+
+# class LeaveRequestCreateView(APIView):
+#     permission_classes = [AllowAny]
+
+#     def post(self, request):
+#         try:
+#             serializer = LeaveRequestSerializer(data=request.data)
+
+#             if serializer.is_valid(): # if all fields is valid,
+#                 serializer.save() # save it to thr DB
+#                 return Response(serializer.data, status=status.HTTP_201_CREATED)
+#             # if any field is Invalid, return this
+#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+#         except Exception as error:
+#             return Response({'error': str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class LeaveRequestDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get(self, request, leave_request_id):
         try:
@@ -217,7 +275,7 @@ class LeaveRequestDetailView(APIView):
 
 
 class LeaveRequestUpdateView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def put(self, request, leave_request_id):
         try:
@@ -237,7 +295,7 @@ class LeaveRequestUpdateView(APIView):
 
 
 class LeaveRequestDeleteView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def delete(self, request, leave_request_id):
         try:
@@ -355,7 +413,7 @@ class PendingLeaveRequestView(APIView):
         
 
 class LeaveBalanceListView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get(self, request):
         # TODO:
@@ -369,20 +427,50 @@ class LeaveBalanceListView(APIView):
         return Response(serializer.data)
 
 
+# class LeaveBalanceByEmployeeView(APIView):
+#     permission_classes = [AllowAny]
+
+#     def get(self, request, employee_id):
+#         # TODO:
+#         # 1. Get all of all leave balances from the DB that related to employee_id
+#         queryset = LeaveBalance.objects.filter(employee= employee_id)
+
+#         # 2. convert to a JSON using a serializer
+#         serializer = LeaveBalanceSerializer(queryset, many=True)
+
+#         # 3. return a response
+#         return Response(serializer.data, status=status.HTTP_200_OK)
 class LeaveBalanceByEmployeeView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes= [AllowAny]
 
-    def get(self, request, employee_id):
-        # TODO:
-        # 1. Get all of all leave balances from the DB that related to employee_id
-        queryset = LeaveBalance.objects.filter(employee= employee_id)
-
-        # 2. convert to a JSON using a serializer
-        serializer = LeaveBalanceSerializer(queryset, many=True)
-
-        # 3. return a response
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
+    def get(self, request, employee_id):  # 🔥 أضف employee_id هنا
+        try:
+            # استخدم employee_id من الـ URL بدل request.user
+            employee = Employee.objects.get(id=employee_id)
+            leave_balances = LeaveBalance.objects.filter(
+                employee=employee, 
+                is_active=True
+            ).select_related('leave_type')
+            
+            # organize balance_data by leave_types
+            balance_data = {}
+            for balance in leave_balances:
+                balance_data[balance.leave_type.type] = {
+                    'remaining_days': balance.remaining_days,
+                    'used_days': balance.used_days,
+                    'total_days': balance.total_days,
+                    'max_days_allowed': balance.leave_type.max_days_allowed,
+                    'warning_status': balance.get_warning_status()[0],
+                    'warning_message': balance.get_warning_status()[1]
+                }
+            
+            return Response(balance_data)
+            
+        except Employee.DoesNotExist:
+            return Response(
+                {'error': 'Employee profile not found'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
 
 class SignupUserView(APIView):
     permission_classes = [AllowAny]
@@ -439,7 +527,8 @@ class SignupUserView(APIView):
                 "last_name": user.last_name,
                 "employee_id": employee.id,
                 "job_title": employee.job_title,
-                "department": employee.department
+                "department": employee.department,
+                "role": employee.role
             }, status=status.HTTP_201_CREATED)
             
         except Exception as err:
@@ -450,3 +539,46 @@ class SignupUserView(APIView):
             return Response(
                 {"error": str(err)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+
+class DashboardStatsView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        user = request.user
+        employee = Employee.objects.filter(user=user).first()
+        
+        if employee.role == 'admin':
+            total_employees = Employee.objects.count()
+            pending_requests = LeaveRequest.objects.filter(status='pending').count()
+            approved_this_month = LeaveRequest.objects.filter(
+                status='approved',
+                created_at__month=timezone.now().month
+            ).count()
+            
+            recent_requests = LeaveRequest.objects.select_related('employee__user').order_by('-created_at')[:5]
+            
+            stats = {
+                'total_employees': total_employees,
+                'pending_requests': pending_requests,
+                'approved_this_month': approved_this_month,
+                'recent_requests': LeaveRequestSerializer(recent_requests, many=True).data
+            }
+            
+        else:
+            my_requests = LeaveRequest.objects.filter(employee=employee)
+            total_requests = my_requests.count()
+            approved_requests = my_requests.filter(status='approved').count()
+            pending_requests = my_requests.filter(status='pending').count()
+            
+            leave_balance = LeaveBalance.objects.filter(employee=employee).first()
+            
+            stats = {
+                'total_requests': total_requests,
+                'approved_requests': approved_requests,
+                'pending_requests': pending_requests,
+                'leave_balance': LeaveBalanceSerializer(leave_balance).data if leave_balance else None
+            }
+        
+        return Response(stats)
